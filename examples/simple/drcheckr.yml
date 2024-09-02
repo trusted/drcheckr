@@ -1,0 +1,13 @@
+---
+images:
+- name: my_image
+
+variables:
+- name: version
+
+dependencies:
+- name: ruby
+  eol: ruby
+  cycle: '3.2'
+- name: chrome
+  google_chrome: linux/stable
