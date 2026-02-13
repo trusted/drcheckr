@@ -6,4 +6,8 @@ gemspec
 
 gem 'nokogiri'
 gem 'excon'
+gem 'logger'
+gem 'ostruct'
 gem 'debug'
+gem 'minitest'
+gem 'rake'

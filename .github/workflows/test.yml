@@ -1,0 +1,17 @@
+name: Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Build test image
+        run: docker build -t drcheckr-test .
+      - name: Run tests
+        run: docker run --rm drcheckr-test

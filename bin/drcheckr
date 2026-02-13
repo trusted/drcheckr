@@ -1,11 +1,54 @@
-#!/usr/bin/env ruby
-# frozen_string_literal: true
+#!/usr/bin/env sh
+set -e
 
-begin
-  lib_dir = File.expand_path("#{__dir__}/../lib")
-  $:.unshift(lib_dir)
-end
+# Resolve the real directory of this script, following symlinks.
+SCRIPT="$0"
+while [ -L "$SCRIPT" ]; do
+  SCRIPT_DIR="$(cd "$(dirname "$SCRIPT")" && pwd)"
+  SCRIPT="$(readlink "$SCRIPT")"
+  case "$SCRIPT" in
+    /*) ;;
+    *) SCRIPT="$SCRIPT_DIR/$SCRIPT" ;;
+  esac
+done
+SCRIPT_DIR="$(cd "$(dirname "$SCRIPT")" && pwd)"
 
-require 'drcheckr'
+# Locate a Ruby version manager and activate it so we get the right Ruby.
+setup_ruby() {
+  # Try mise first (on PATH, then default install location).
+  if command -v mise >/dev/null 2>&1; then
+    eval "$(mise activate sh 2>/dev/null)" || true
+    eval "$(mise hook-env -s sh 2>/dev/null)" || true
+    return 0
+  elif [ -x "$HOME/.local/bin/mise" ]; then
+    eval "$("$HOME/.local/bin/mise" activate sh 2>/dev/null)" || true
+    eval "$("$HOME/.local/bin/mise" hook-env -s sh 2>/dev/null)" || true
+    return 0
+  fi
 
-Drcheckr::Cli.start(ARGV)
+  # Try rbenv (on PATH, then default install location).
+  if command -v rbenv >/dev/null 2>&1; then
+    eval "$(rbenv init - sh 2>/dev/null)" || true
+    return 0
+  elif [ -x "$HOME/.rbenv/bin/rbenv" ]; then
+    export PATH="$HOME/.rbenv/bin:$PATH"
+    eval "$(rbenv init - sh 2>/dev/null)" || true
+    return 0
+  fi
+
+  return 1
+}
+
+if ! setup_ruby; then
+  echo "drcheckr: error: no Ruby version manager found (tried mise, rbenv)." >&2
+  echo "Install mise (https://mise.jdx.dev) or rbenv (https://github.com/rbenv/rbenv) to manage Ruby." >&2
+  exit 1
+fi
+
+# Verify ruby is now available.
+if ! command -v ruby >/dev/null 2>&1; then
+  echo "drcheckr: error: ruby not found after activating version manager. Ensure Ruby is installed." >&2
+  exit 1
+fi
+
+exec ruby "$SCRIPT_DIR/drcheckr-cli" "$@"

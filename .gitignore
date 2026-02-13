@@ -21,4 +21,5 @@ node_modules
 
 .idea/
 .yardoc/
+.claude/settings.local.json
 
