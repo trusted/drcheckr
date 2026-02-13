@@ -9,8 +9,13 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        ruby-version: ['3.4.8', '4.0.1']
     steps:
       - uses: actions/checkout@v6
+      - name: Set Ruby version
+        run: echo "${{ matrix.ruby-version }}" > .ruby-version
       - name: Build test image
         run: docker build -t drcheckr-test .
       - name: Run tests
