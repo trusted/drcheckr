@@ -1,0 +1,7 @@
+---
+dependencies:
+  ruby: 3.2.2
+  chrome: 117.0.5938.132
+
+variables:
+  version: '3.14159'
